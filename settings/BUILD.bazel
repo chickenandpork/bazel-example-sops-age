@@ -1,0 +1,13 @@
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+# This setting is used to select the architecture of the "age" tool.  Now, I know I should have
+# done a proper toolchain but this was a bit faster to set up.  I'll need to clean this up later,
+# but I'd like to make use of it sooner.
+#
+# Of note, other architectures are undefined, so fast-fail there.
+
+selects.config_setting_group(
+    name = "osx_amd64",
+    match_all = ["@platforms//os:osx", "@platforms//cpu:x86_64" ],
+)
+
