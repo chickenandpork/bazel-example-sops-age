@@ -8,6 +8,8 @@ load("@bazel_skylib//lib:selects.bzl", "selects")
 
 selects.config_setting_group(
     name = "osx_amd64",
-    match_all = ["@platforms//os:osx", "@platforms//cpu:x86_64" ],
+    match_all = [
+        "@platforms//os:osx",
+        "@platforms//cpu:x86_64",
+    ],
 )
-
