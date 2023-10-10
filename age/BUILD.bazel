@@ -4,8 +4,16 @@ load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 
 exports_files(["sops-age-encrypt.sh.tpl"])
 
+# NOTA BENE one more time: you should probably not encrypt actual secrets in a build/test step as
+# that would likely suggest you've got secrets in the codebase.  I'm doing this here for an
+# End-to-End test, but if you're copying this, please be very certain you won't be left with
+# secrets committed.
+#
+# TBD: an example of temporarily using this as convenience function to generate a key and crypttext
+# in a way that doesn't commit secrets to sourcecode control.
 sops_encrypt_files(
     name = "enc",
+    testonly = True,
     #debug = True,
     srcs = ["//age:gendata"],
     age_recipient_files = [":genkey"],
@@ -13,6 +21,7 @@ sops_encrypt_files(
 
 sops_decrypt_file(
     name = "dec",
+    testonly = True,
     #debug = True,
     srcs = [":enc"],
     age_recipient_file = ":genkey",
@@ -42,6 +51,7 @@ genrule(
 #   - change in `age-keygen` binary
 genrule(
     name = "genkey",
+    testonly = True,
     srcs = [
         ":age-keygen",  # list our tools; inplicitly fills a required attribute
     ],
