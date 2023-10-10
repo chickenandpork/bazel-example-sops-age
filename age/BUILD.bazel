@@ -56,6 +56,7 @@ alias(
     name = "age",
     actual = select({
         # really, there should be a DRY toolchain resolution and a single value but let's get past this one first
+        "//settings:linux_amd64": "@age_linux_amd64//:age",
         "//settings:osx_amd64": "@age_darwin_amd64//:age",
         # no default given yet --> build via foreign_cc ?
     }),
@@ -64,6 +65,7 @@ alias(
 alias(
     name = "age-keygen",
     actual = select({
+        "//settings:linux_amd64": "@age_linux_amd64//:age-keygen",
         "//settings:osx_amd64": "@age_darwin_amd64//:age-keygen",
         # no default given yet --> build via foreign_cc ?
     }),
