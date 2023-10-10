@@ -41,3 +41,16 @@ http_archive(
         "https://github.com/FiloSottile/age/releases/download/v1.1.1/age-v1.1.1-darwin-amd64.tar.gz",
     ],
 )
+
+http_archive(
+    name = "age_linux_amd64",
+    build_file_content = "\n".join([
+        """alias(name="age", actual="//:age/age", visibility = ["//visibility:public"])""",
+        """alias(name="age-keygen", actual="//:age/age-keygen", visibility = ["//visibility:public"])""",
+        "",  # readability during debug
+    ]),
+    sha256 = "cf16cbb108fc56e2064b00ba2b65d9fb1b8d7002ca5e38260ee1cc34f6aaa8f9",
+    urls = [
+        "https://github.com/FiloSottile/age/releases/download/v1.1.1/age-v1.1.1-linux-amd64.tar.gz",
+    ],
+)
