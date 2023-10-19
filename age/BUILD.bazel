@@ -30,6 +30,7 @@ sops_decrypt_file(
 # This End-to-End test is an encrypt/decrypt/diff-check using the generated key `:genkey`.
 diff_test(
     name = "e2e",
+    size = "small",
     failure_message = "decrypted config did not match initial plaintext",
     file1 = "//age:gendata",
     file2 = ":dec",
