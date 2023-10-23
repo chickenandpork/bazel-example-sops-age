@@ -1,6 +1,7 @@
 workspace(name = "bazel-example-sops-age")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 http_archive(
     name = "aspect_bazel_lib",
@@ -18,10 +19,15 @@ http_archive(
 #        "https://github.com/masmovil/bazel-rules/archive/refs/tags/v0.5.0.tar.gz",
 #    ],
 #)
-
-local_repository(
+#
+#local_repository(
+#    name = "com_github_masmovil_bazel_rules",
+#    path = "/Users/allanc/src/rules_helm",
+#)
+git_repository(
     name = "com_github_masmovil_bazel_rules",
-    path = "/Users/allanc/src/rules_helm",
+    branch = "feature/enable-sops-with-age",
+    remote = "https://github.com/chickenandpork/rules_helm.git",
 )
 
 # Loading phase -- I tend to put this here when I can to keep the stuff above somewhat ordered
