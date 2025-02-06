@@ -51,7 +51,7 @@ def _sops_encrypt_files_impl(ctx):
                 for f in ctx.files.srcs
             ]),
             "{RECIPIENT_FILES}": "\n".join([
-                "\trecipient_pubkeys+=$(rec_parse %s)" % (attrfilepath(ctx, f))
+                "ADD=$(rec_parse %s); recipient_pubkeys+=(${ADD})" % (attrfilepath(ctx, f))
                 for f in ctx.files.age_recipient_files
             ]),
             "{SOPS_BINARY_PATH}": sops.path,
