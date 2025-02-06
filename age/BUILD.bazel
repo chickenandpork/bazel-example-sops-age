@@ -2,63 +2,11 @@ load(":sops-age-decrypt.bzl", "sops_decrypt_file")
 load(":sops-age-encrypt.bzl", "sops_encrypt_files")
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 
-exports_files(["sops-age-encrypt.sh.tpl"])
+exports_files([
+    "sops-age-decrypt.sh.tpl",
+    "sops-age-encrypt.sh.tpl",
+])
 
-# NOTA BENE one more time: you should probably not encrypt actual secrets in a build/test step as
-# that would likely suggest you've got secrets in the codebase.  I'm doing this here for an
-# End-to-End test, but if you're copying this, please be very certain you won't be left with
-# secrets committed.
-#
-# TBD: an example of temporarily using this as convenience function to generate a key and crypttext
-# in a way that doesn't commit secrets to sourcecode control.
-sops_encrypt_files(
-    name = "enc",
-    testonly = True,
-    #debug = True,
-    srcs = ["//age:gendata"],
-    age_recipient_files = [":genkey"],
-)
-
-sops_decrypt_file(
-    name = "dec",
-    testonly = True,
-    #debug = True,
-    srcs = [":enc"],
-    age_recipient_file = ":genkey",
-)
-
-# This End-to-End test is an encrypt/decrypt/diff-check using the generated key `:genkey`.
-diff_test(
-    name = "e2e",
-    size = "small",
-    failure_message = "decrypted config did not match initial plaintext",
-    file1 = "//age:gendata",
-    file2 = ":dec",
-)
-
-# GenData is a basic payload to encrypt; change this generator to seed different test data.
-genrule(
-    name = "gendata",
-    srcs = ["BUILD.bazel"],  # force creation only when this buildfile changes
-    outs = ["data.yaml"],
-    cmd = "echo 'everything: 42' > $@",
-)
-
-# Generate a key
-#
-# By setting dependency on the keygen binary, we regenerate this target only if:
-#   - removed by `bazel clean` or similar deletion
-#   - change in build env (`--action_env`) or deletion
-#   - change in `age-keygen` binary
-genrule(
-    name = "genkey",
-    testonly = True,
-    srcs = [
-        ":age-keygen",  # list our tools; inplicitly fills a required attribute
-    ],
-    outs = ["key.txt"],
-    cmd = "$(location :age-keygen) --output $@",
-)
 
 # This alias simply gives us a constant string for the binary so we can $(location <thing>).  This
 # is why (if you read settings/BUILD.bazel) this was done as a simple select() rather than a proper
@@ -71,6 +19,7 @@ alias(
         "//settings:osx_amd64": "@age_darwin_amd64//:age",
         # no default given yet --> build via foreign_cc ?
     }),
+    visibility = ["//:__subpackages__"],
 )
 
 alias(
@@ -80,4 +29,5 @@ alias(
         "//settings:osx_amd64": "@age_darwin_amd64//:age-keygen",
         # no default given yet --> build via foreign_cc ?
     }),
+    visibility = ["//:__subpackages__"],
 )

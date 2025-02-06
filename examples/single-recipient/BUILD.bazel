@@ -2,8 +2,6 @@ load("//age:sops-age-decrypt.bzl", "sops_decrypt_file")
 load("//age:sops-age-encrypt.bzl", "sops_encrypt_files")
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 
-exports_files(["sops-age-encrypt.sh.tpl"])
-
 # This example shows encryption/decryiption end-to-end of a secret for a single recipient.  The
 # encrypted secret is something you can store in code so that one of many recipients can unpack
 # and use it:
@@ -65,30 +63,8 @@ genrule(
     name = "genkey",
     testonly = True,
     srcs = [
-        ":age-keygen",  # list our tools; inplicitly fills a required attribute
+        "//age:age-keygen",  # list our tools; inplicitly fills a required attribute
     ],
     outs = ["key.txt"],
-    cmd = "$(location :age-keygen) --output $@",
-)
-
-# This alias simply gives us a constant string for the binary so we can $(location <thing>).  This
-# is why (if you read settings/BUILD.bazel) this was done as a simple select() rather than a proper
-# toolchain
-alias(
-    name = "age",
-    actual = select({
-        # really, there should be a DRY toolchain resolution and a single value but let's get past this one first
-        "//settings:linux_amd64": "@age_linux_amd64//:age",
-        "//settings:osx_amd64": "@age_darwin_amd64//:age",
-        # no default given yet --> build via foreign_cc ?
-    }),
-)
-
-alias(
-    name = "age-keygen",
-    actual = select({
-        "//settings:linux_amd64": "@age_linux_amd64//:age-keygen",
-        "//settings:osx_amd64": "@age_darwin_amd64//:age-keygen",
-        # no default given yet --> build via foreign_cc ?
-    }),
+    cmd = "$(location //age:age-keygen) --output $@",
 )
