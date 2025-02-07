@@ -14,8 +14,9 @@
         "bazel"
       ],
       "matchUpdateTypes": [
-        "patch",
-        "minor"
+        "digest",
+        "minor",
+        "patch"
       ]
     }
   ],
