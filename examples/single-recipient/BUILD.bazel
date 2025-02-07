@@ -1,0 +1,70 @@
+load("//age:sops-age-decrypt.bzl", "sops_decrypt_file")
+load("//age:sops-age-encrypt.bzl", "sops_encrypt_files")
+load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
+
+# This example shows encryption/decryiption end-to-end of a secret for a single recipient.  The
+# encrypted secret is something you can store in code so that one of many recipients can unpack
+# and use it:
+#
+# 1. (:genkey) generate a random key-pair to simulate a user's pub/priv keys
+# 2. (:gendata) generate a secret: we're not using actual secrets here
+# 3. (:enc) encrypt the secret with the public half of generated key (:genkey)
+# 4. (:dec) decrypt the crypttext with the private half of generated key (:genkey)
+# 5. (:e2e) compare the generated (:gendata) and decrypted (:dec) plaintext to match
+
+
+# NOTA BENE one more time: you should probably not encrypt actual secrets in a build/test step as
+# that would likely suggest you've got secrets in the codebase.  I'm doing this here for an
+# End-to-End test, but if you're copying this, please be very certain you won't be left with
+# secrets committed.
+#
+# TBD: an example of temporarily using this as convenience function to generate a key and crypttext
+# in a way that doesn't commit secrets to sourcecode control.
+sops_encrypt_files(
+    name = "enc",
+    testonly = True,
+    #debug = True,
+    srcs = [":gendata"],
+    age_recipient_files = [":genkey"],
+)
+
+sops_decrypt_file(
+    name = "dec",
+    testonly = True,
+    #debug = True,
+    srcs = [":enc"],
+    age_recipient_file = ":genkey",
+)
+
+# This End-to-End test is an encrypt/decrypt/diff-check using the generated key `:genkey`.
+diff_test(
+    name = "e2e",
+    size = "small",
+    failure_message = "decrypted config did not match initial plaintext",
+    file1 = ":gendata",
+    file2 = ":dec",
+)
+
+# GenData is a basic payload to encrypt; change this generator to seed different test data.
+genrule(
+    name = "gendata",
+    srcs = ["BUILD.bazel"],  # force creation only when this buildfile changes
+    outs = ["data.yaml"],
+    cmd = "echo 'everything: 42' > $@",
+)
+
+# Generate a key
+#
+# By setting dependency on the keygen binary, we regenerate this target only if:
+#   - removed by `bazel clean` or similar deletion
+#   - change in build env (`--action_env`) or deletion
+#   - change in `age-keygen` binary
+genrule(
+    name = "genkey",
+    testonly = True,
+    srcs = [
+        "//age:age-keygen",  # list our tools; inplicitly fills a required attribute
+    ],
+    outs = ["key.txt"],
+    cmd = "$(location //age:age-keygen) --output $@",
+)
